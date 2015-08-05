@@ -6,6 +6,8 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 from kanonymity import *
+from gfile import *
+
 #-------------------------------------------------------------------------------
 True=1
 False=0

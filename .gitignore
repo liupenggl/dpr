@@ -45,3 +45,4 @@ gfile.pyc
 *.pyc
 *.txt
 data/AFFIL.NET
+*.gml
