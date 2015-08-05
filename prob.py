@@ -351,7 +351,7 @@ def test_p():
  #   pl.grid(True)
  ##   pl.savefig("n={0} p={1}.png".format(n,p))
  #   pl.show()
-
+#------------------------------------------------------------------
 if __name__=="__main__":
     print  "in prob.py __main__"
     g=nx.Graph()
@@ -380,8 +380,6 @@ if __name__=="__main__":
 
     #DrawGraph(g)
     
-    #km_random(g)
-
-    #test_bi_di()
+ 
     test_p()
-    #test_bi_g()
+ 
