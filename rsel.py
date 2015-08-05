@@ -162,7 +162,7 @@ def sh(g):
     
 def test(g):
     g.nodes()
-    
+#------------------------------------------------   
 def main():
     #print 'main running!'
     #g=nx.read_adjlist("te.adj",nodetype=int)
@@ -178,7 +178,7 @@ def main():
     nx.clustering(g)
 
   
-   
+#----------------------------  
 
 if __name__=='__main__':
     main()
