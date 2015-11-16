@@ -1,12 +1,12 @@
+# -*- coding: cp936 -*-
 
 import os
 import time
 import wx
 import networkx as nx
 import matplotlib.pyplot as plt
-
+import local_perturbation as lp
 from kanonymity import *
-from gfile import *
 
 #-------------------------------------------------------------------------------
 True=1
@@ -28,6 +28,7 @@ ID_SAVE_NET=129
 
 ID_KANON=130
 ID_RANDOM=131
+ID_PERTURBATION=132
 
 ID_ANALYZE=142
 ID_DEGREE=143
@@ -131,6 +132,8 @@ class dpFrame(wx.Frame):
         wx.EVT_MENU(self,ID_KANON,self.OnKanon)        
         protectMenu.Append(ID_RANDOM,"&Random\tCtrl+R","Random")
         wx.EVT_MENU(self,ID_RANDOM,self.OnRandom)
+        protectMenu.Append(ID_PERTURBATION,"&Local_Pertuibation\tCtrl+P","Local perturbation")
+        wx.EVT_MENU(self,ID_PERTURBATION,self.OnLocalPerturbation)
  
         analyzeMenu=wx.Menu()
         analyzeMenu.Append(ID_DRAW,"&Draw\tCtrl+D","Draw the graph")
@@ -424,8 +427,37 @@ class dpFrame(wx.Frame):
             return
         num=self.g.number_of_edges()*r/100
         randomAnony(self.g,num,self.rtb)
-
-
+#---------------------------------------
+    def OnLocalPerturbation(self,e):
+        k=0
+        dlg=wx.NumberEntryDialog(self,message='The Number of nodes in cluster, default 3!',prompt='k:',caption='k-anonymity parameter',value=3,min=2,max=40)
+        if (dlg.ShowModal() == wx.ID_OK):
+            k=dlg.GetValue()
+        else:
+            return
+        self.rtb.SetValue("")
+        self.PushStatusText("Starting Local Perturbation", SB_INFO)
+        self.ShowPos()
+        if len(self.g.node)!=0:
+            origin_g=self.g.copy()
+            result=lp.LocalPerturbation(self.g,k)#perturbation and get the clusters and new graph
+            self.g=result[1]
+            OutStr="the clusters:\n"
+            for c in result[0]:
+                OutStr=OutStr+str(tuple(c))+"\n"
+            self.rtb.SetValue(OutStr)
+            plt.figure("comparison")
+            plt.subplot(211)
+            plt.title ("original graph")
+            nx.draw(origin_g,with_labels=True,pos=nx.spring_layout(origin_g))
+            plt.subplot(212)
+            plt.title("new graph")
+            nx.draw(self.g,with_labels=True,pos=nx.spring_layout(self.g))
+            plt.show()
+        else:
+            print 'Grap is empty!! Please load data!'
+            wx.MessageBox("No data was selected. Please load data!","Data Error")
+#---------------------------------------
 
     def OnAnalyze(self,e):
         self.rtb.SetValue("")
