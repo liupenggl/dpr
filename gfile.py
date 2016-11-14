@@ -3,8 +3,6 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 #-------------------------------------------------------------------------------
-#  
-
 def read_file_txt(g,path=None):
     #path="D:\\program\\code\\hybrid\\data\\graph.txt"
     """Read .txt file."""
@@ -60,7 +58,16 @@ def save_file_net(g,path=None):
     except:
         print "Save file .net errro!"
     return True
-
+#-------------------------------------------------------------------------------
+def da(g):
+    '''社会网络分析图例'''
+    g.clear()
+    g.add_edges_from([(1,2),(1,3),(1,4),(2,3),(3,4),(4,5),(4,6),(5,6),(5,7),(5,8),(6,7),(6,8),(7,8),(7,9)])
+    return g
+#-------------------------------------------------------------------------------
+def db(g):
+    g.clear()
+    g.add_edges_from([(1, 2), (1, 5),(2, 3), (2, 4), (4, 5), (5, 6), (5, 7)])
 #-------------------------------------------------------------------------------
 def DrawGraph(g, pos=None, ax=None, hold=None, **kwds):
     """call nx.draw to display the data"""

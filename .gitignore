@@ -46,3 +46,5 @@ gfile.pyc
 *.txt
 data/AFFIL.NET
 *.gml
+*.iml
+*.xml
