@@ -6,9 +6,6 @@ import networkx as nx
 import numpy
 from scipy.cluster import hierarchy
 from scipy.spatial import distance
- 
- 
-
 
 def create_hc(G, t=1.0):
     """
