@@ -12,9 +12,9 @@ def read_file_txt(g,path=None):
     import shlex
     
     try:
-        f=open(path,'r')
+        f=open(path, 'r')
     except:
-        print "readFileTxt error" 
+        print "int readFileTxt open error"
 
     try:
         for line in f:

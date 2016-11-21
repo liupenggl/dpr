@@ -6,9 +6,11 @@ import numpy as np
 import pylab as pl
 import matplotlib.pyplot as plt
 from gfile import *
+from rsel import *
 import networkx as nx
 import random
 import string
+import math
 #-------------------------------------------------------------------------------------------------------
 def RPerturbSp(g,p=None):
     '''固定参数的随机扰动方法'''
@@ -190,12 +192,11 @@ def gRa(g, w):
     N = (n * (n - 1)) / 2
     for k, v in bw.items():
         g.add_edge(*k, weight=v)
-    print g.edges(data=True)
+#    print g.edges(data=True)
     R = nx.to_scipy_sparse_matrix(g, weight='weight')
     Rp = R.toarray()
 
     Rp = w * Rp * 2.0 / Rp.sum()
-    ttt=Rp.sum()
 
     q = float(e_num - w) / (N - e_num)
 
@@ -203,49 +204,77 @@ def gRa(g, w):
         for j, e in enumerate(each):
             if e == 0:
                 Rp[i, j] = q  # 超级绕采用特别方式在Rp中加入Rq
+    for i in range(n):
+        Rp[i,i]=0 #去除对角线上的q
     return Rp
 
 
 def normal_vdiR(z, v, g, Rp):
-    """z 是节点的度，v节点的标签，g图,p边仍然存在的概率        """
-
+    """z 是节点的度，v节点的标签，Rp是扰动将矩阵        """
     n = len(g)
     di = len(g[v])
     i=g.nodes().index(v)
     mvar=0
     for each in Rp[i]:
-        mvar=mvar+each(1-each)
+        each=(each if each<1 else 1)
+        mvar=mvar+each*(1-each)
 
     X=stats.norm(di,mvar)
-    sum=X.cdf(di+0.5)-X.cdf(di-0.5)
+    sum=X.cdf(z+0.5)-X.cdf(z-0.5)
 
     return sum
 #-------------------------------------------------------------------------------------------------------
-def riskR(v,g,Rp):
-    """v是节点，g是图,p边仍然存在的概率，输入为点v被重识别的概率
+def riskR(v,g,R):
+    """v是节点，R是扰动将矩阵，输出为点v被重识别的概率
     """
     di=len(g[v])
-    b=binomial_vdiS(di, v, g, p)
+    b=normal_vdiR(di, v, g, R)
     tsum=0
     for each in g:
-        tsum=tsum+binomial_vdiS(di, each, g, p)
+        tsum=tsum+normal_vdiR(di, each, g, R)
     return b/tsum
 #-------------------------------------------------------------------------------------------------------
-def cal_pRa(g, pr):
+def cal_pR(g, pr):
     """g图,pr要求的隐私保护力度"""
-
+    w=len(g.edges())
+    w=math.ceil(w*0.8)
+    step=math.ceil(0.05*w)
+    R=gRa(g, w)
+    for each in g:
+        if riskR(each, g, R)>pr:
+            while 1:
+                w=w-step
+                R = gRa(g, w)
+                print 'v=',each,'w=',w,'r=',riskR(each, g, R)
+                if riskR(each, g, R) < pr or w<step:
+                    break
+    return w
 
 if __name__=='__main__':
     print 'in grandom'
     g=nx.Graph()
-    da(g)
-    p=0.7
+
+    g = read_file_txt(g,r"C:\Users\Peng\OneDrive\Research\data\ca-HepTh\CA-HepTh.txt")
+
+    #    g = read_file_txt(g, r"C:\Users\Peng\OneDrive\Research\data\7.txt")
+    # da(g)
+    # p=0.7
     #r=RPerturbS(g,p)
 
     # for v in g:
     #      print "z:",v,"=",riskS(v,g,p)
     # print cal_pSa(g,0.2)
-    x=gRa(g,6)
-    print x.sum()/2
+    # x=gRa(g,6)
+    # for each in g:
+    #     print each, riskR(each,g,x)
+    #cal_pR(g,0.4)
+    print len(g.nodes())
+    print nx.average_clustering(g)
+
+
+
+
+
+
 
     #DrawGraph(r)
