@@ -146,6 +146,7 @@ def r_perturbR(g,R):
 
 
 
+
 #-------------------------------------------------------------------------------------------------------
 def gR(g,w):
     '''w为图中的边数，表示经过减边p扰动后仍然留在数据中的边数'''
@@ -249,28 +250,51 @@ def cal_pR(g, pr):
                 if riskR(each, g, R) < pr or w<step:
                     break
     return w
+def cal_pRv(v,g,pr):
+    w=len(g.edges())
+    w=math.ceil(w*0.9)
+    step=math.ceil(0.05*w)
+    R=gRa(g, w)
+    if riskR(v, g, R) > pr:
+        while 1:
+            w = w - step
+            R = gRa(g, w)
+            print 'v=', v, 'w=', w, 'r=', riskR(v, g, R)
+            if riskR(v, g, R) < pr or w < step:
+                break
 
+    return w
 if __name__=='__main__':
     print 'in grandom'
     g=nx.Graph()
 
-    g = read_file_txt(g,r"C:\Users\Peng\OneDrive\Research\data\ca-HepTh\CA-HepTh.txt")
 
-    #    g = read_file_txt(g, r"C:\Users\Peng\OneDrive\Research\data\7.txt")
+    #    g = read_file_txt(g,r"E:\data\facebook1.txt")
+    #g = read_file_txt(g, r"C:\Users\Peng\OneDrive\Research\data\facebook1.txt")
+    g = read_file_txt(g,r"C:\Users\Peng\OneDrive\Research\data\Cora.txt")
+    #g = read_file_txt(g,r"C:\Users\Peng\OneDrive\Research\data\ca-HepTh\CA-GrQc.txt")
     # da(g)
     # p=0.7
     #r=RPerturbS(g,p)
 
     # for v in g:
     #      print "z:",v,"=",riskS(v,g,p)
-    # print cal_pSa(g,0.2)
+    #print cal_pSa(g,0.3)
     # x=gRa(g,6)
     # for each in g:
     #     print each, riskR(each,g,x)
-    #cal_pR(g,0.4)
-    print len(g.nodes())
-    print nx.average_clustering(g)
+    for p in np.arange(0.1,0.4,0.1):
+        print cal_pRv('35',g,p)
+    # print len(g.nodes())
+    # print len(g.edges())
+    # print nx.average_clustering(g)
+    #print [len(c) for c in nx.connected_components(g)]
 
+    d=nx.degree(g)
+    print d
+    print sorted(d.items(),key=lambda item:item[1],reverse=True)
+    # bw = nx.edge_betweenness_centrality(g, normalized=False)
+    # print bw
 
 
 
