@@ -42,7 +42,7 @@ def r_perturbS(g,p=None):
     e_num=len(g.edges())#图中存在的边数
 
     q = e_num * (1 - p) / ((n * (n - 1)) / 2 - e_num)
-    print q
+    #print q
     i = 0
     ts=0
 
@@ -344,7 +344,32 @@ def t_Gnutella_cc(path=r"d:\data\p2p-Gnutella08.txt"):
     f.write(rstr)
     f.close()
 
+def t_t_cc(path=r"d:\data\9.txt"):
+    rstr = ''
+    g = nx.Graph()
+    g = read_file_txt(g, path)
+    w = [14,13,12,6]
+    print nx.average_clustering(g)
+    for each in w:
+        R=gRa(g,each)
+        pg=r_perturbR(g, R)
+        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
+        rstr=rstr+'\n'
 
+    try:
+        path=path.replace('9','9_cc')
+        f=open(path, 'w')
+    except:
+        print "int Create File error"
+
+    p = np.array(w)/14.0
+    for each in p:
+        pg=r_perturbS(g, each)
+        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
+        rstr=rstr+'\n'
+
+    f.write(rstr)
+    f.close()
 
 if __name__=='__main__':
     print 'in grandom'
@@ -367,16 +392,17 @@ if __name__=='__main__':
     #     print each, riskR(each,g,x)
     # for p in np.arange(0.1,0.4,0.1):
     #     print cal_pRv('3830',g,p)
-    print len(g.nodes())
-    print len(g.edges())
+    # print len(g.nodes())
+    # print len(g.edges())
     # print nx.average_clustering(g)
     #print [len(c) for c in nx.connected_components(g)]
 
-    d=nx.degree(g)
-    print d
-    print sorted(d.items(),key=lambda item:item[1],reverse=True)
+    # d=nx.degree(g)
+    # print d
+    # print sorted(d.items(),key=lambda item:item[1],reverse=True)
     # bw = nx.edge_betweenness_centrality(g, normalized=False)
     # print bw
     #t_facebook_cc(path=r"d:\data\facebook1.txt")
-    t_GrQc_cc(path=r"d:\data\CA-GrQc.txt")
+    #t_GrQc_cc(path=r"d:\data\CA-GrQc.txt")
+    t_t_cc(path=r"d:\data\9.txt")
     #DrawGraph(r)
