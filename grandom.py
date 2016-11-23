@@ -11,6 +11,7 @@ import networkx as nx
 import random
 import string
 import math
+import os
 #-------------------------------------------------------------------------------------------------------
 def RPerturbSp(g,p=None):
     '''固定参数的随机扰动方法'''
@@ -51,11 +52,11 @@ def r_perturbS(g,p=None):
             if(B[i,j]==1):
                 B[i,j] = stats.bernoulli.rvs(p)#参数p伯努利实验成功的概率
                 ts=ts + 1
-                print "+",ts, ":", i, ",", j, ",", B[i, j]
+                # print "+",ts, ":", i, ",", j, ",", B[i, j]
             else:
                 B[i,j] = stats.bernoulli.rvs(q)#参数q伯努利实验成功的概率
                 ts=ts + 1
-                print "-",ts, ":", i, ",", j, ",", B[i, j]
+                # print "-",ts, ":", i, ",", j, ",", B[i, j]
             j = j + 1
         i=i+1
 
@@ -131,20 +132,18 @@ def r_perturbR(g,R):
                 else:
                     B[i, j] = stats.bernoulli.rvs(1)  #其实可以去掉
                 ts=ts + 1
-                print "+",ts, ":", i, ",", j, ",", B[i, j]
+                #print "+",ts, ":", i, ",", j, ",", B[i, j]
             else:
                 if R[i,j]<1:
                     B[i,j] = stats.bernoulli.rvs(R[i,j])#参数q伯努利实验成功的概率
                 else:
                     B[i, j] = stats.bernoulli.rvs(0)  #其实可以去掉
                 ts=ts + 1
-                print "-",ts, ":", i, ",", j, ",", B[i, j]
+                #print "-",ts, ":", i, ",", j, ",", B[i, j]
             j = j + 1
         i=i+1
 
     return nx.from_numpy_matrix(B,create_using=nx.Graph())#重新构建了Graph类型的返回对象
-
-
 
 
 #-------------------------------------------------------------------------------------------------------
@@ -264,15 +263,98 @@ def cal_pRv(v,g,pr):
                 break
 
     return w
+
+
+def t_facebook_cc(path=r"d:\data\facebook1.txt"):
+    rstr = ''
+    g = nx.Graph()
+    g = read_file_txt(g, path)
+    w = [1945, 1294, 860, 643]
+    for each in w:
+        R=gRa(g,each)
+        pg=r_perturbR(g, R)
+        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
+        rstr=rstr+'\n'
+
+    try:
+        path=path.replace('book1','book1_cc')
+        f=open(path, 'w')
+    except:
+        print "int readFileTxt open error"
+
+    p = np.array(w)/4813.0
+    for each in p:
+        pg=r_perturbS(g, each)
+        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
+        rstr=rstr+'\n'
+
+    f.write(rstr)
+    f.close()
+
+
+def t_GrQc_cc(path=r"d:\data\CA-GrQc.txt"):
+    rstr = ''
+    g = nx.Graph()
+    g = read_file_txt(g, path)
+    w = [14496,13454,12394,9782]
+    for each in w:
+        R=gRa(g,each)
+        pg=r_perturbR(g, R)
+        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
+        rstr=rstr+'\n'
+
+    try:
+        path=path.replace('GrQc','GrQc_cc')
+        f=open(path, 'w')
+    except:
+        print "int readFileTxt open error"
+
+    p = np.array(w)/14496.0
+    for each in p:
+        pg=r_perturbS(g, each)
+        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
+        rstr=rstr+'\n'
+
+    f.write(rstr)
+    f.close()
+
+def t_Gnutella_cc(path=r"d:\data\p2p-Gnutella08.txt"):
+    rstr = ''
+    g = nx.Graph()
+    g = read_file_txt(g, path)
+    w = [20777,18700,17995,17023]
+    for each in w:
+        R=gRa(g,each)
+        pg=r_perturbR(g, R)
+        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
+        rstr=rstr+'\n'
+
+    try:
+        path=path.replace('p2p-Gnutella','GrQcp2p-Gnutella_cc')
+        f=open(path, 'w')
+    except:
+        print "int Create File error"
+
+    p = np.array(w)/20777.0
+    for each in p:
+        pg=r_perturbS(g, each)
+        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
+        rstr=rstr+'\n'
+
+    f.write(rstr)
+    f.close()
+
+
+
 if __name__=='__main__':
     print 'in grandom'
     g=nx.Graph()
 
 
     #    g = read_file_txt(g,r"E:\data\facebook1.txt")
-    #g = read_file_txt(g, r"C:\Users\Peng\OneDrive\Research\data\facebook1.txt")
-    g = read_file_txt(g,r"C:\Users\Peng\OneDrive\Research\data\Cora.txt")
-    #g = read_file_txt(g,r"C:\Users\Peng\OneDrive\Research\data\ca-HepTh\CA-GrQc.txt")
+    #g = read_file_txt(g, r"d:\data\facebook1.txt")
+    #g = read_file_txt(g,r"d:\data\Cora.txt")
+    g = read_file_txt(g,r"d:\data\CA-GrQc.txt")
     # da(g)
     # p=0.7
     #r=RPerturbS(g,p)
@@ -283,10 +365,10 @@ if __name__=='__main__':
     # x=gRa(g,6)
     # for each in g:
     #     print each, riskR(each,g,x)
-    for p in np.arange(0.1,0.4,0.1):
-        print cal_pRv('35',g,p)
-    # print len(g.nodes())
-    # print len(g.edges())
+    # for p in np.arange(0.1,0.4,0.1):
+    #     print cal_pRv('3830',g,p)
+    print len(g.nodes())
+    print len(g.edges())
     # print nx.average_clustering(g)
     #print [len(c) for c in nx.connected_components(g)]
 
@@ -295,10 +377,6 @@ if __name__=='__main__':
     print sorted(d.items(),key=lambda item:item[1],reverse=True)
     # bw = nx.edge_betweenness_centrality(g, normalized=False)
     # print bw
-
-
-
-
-
-
+    #t_facebook_cc(path=r"d:\data\facebook1.txt")
+    t_GrQc_cc(path=r"d:\data\CA-GrQc.txt")
     #DrawGraph(r)
