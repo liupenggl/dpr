@@ -17,24 +17,25 @@ def t_facebook_cc1(path=r"d:\data\facebook1.txt"):
     rstr = ''
     g = nx.Graph()
     g = read_file_txt(g, path)
-    w = [1945, 1294, 860, 643]
-    for each in w:
-        R=gRa(g,each)
-        pg=r_perturbR(g, R)
-        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
-        rstr=rstr+'\n'
+    plist = [1.0,0.9, 0.8, 0.7, 0.6,0.5,0.4]
+    ds= sorted(nx.degree(g).items(),key=lambda item: item[1], reverse=True)
+
+    for p in plist:
+        pg=r_perturbS(g, p)
+        rstr=rstr+'{0:8},{1:10.4}'.format(p,nx.average_clustering(pg))
+
+        dpgs= sorted(nx.degree_centrality(pg).items(),key=lambda item: item[1], reverse=True)
+        dsum=0
+        for i in range(20):
+            dsum=abs(dsum+dpgs[i][1]-ds[i][1])
+        rstr = rstr + '{0:8},{1:10.4}'.format(p, dsum)
+        rstr = rstr + '\n'
 
     try:
-        path=path.replace('book1','book1_cc')
+        path=path.replace('book1','book1_pcc')
         f=open(path, 'w')
     except:
         print "int readFileTxt open error"
-
-    p = np.array(w)/4813.0
-    for each in p:
-        pg=r_perturbS(g, each)
-        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
-        rstr=rstr+'\n'
 
     f.write(rstr)
     f.close()
@@ -43,24 +44,24 @@ def t_GrQc_cc1(path=r"d:\data\CA-GrQc.txt"):
     rstr = ''
     g = nx.Graph()
     g = read_file_txt(g, path)
-    w = [14496,13454,12394,9782]
-    for each in w:
-        R=gRa(g,each)
-        pg=r_perturbR(g, R)
-        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
-        rstr=rstr+'\n'
+    plist = [1.0,0.9, 0.8, 0.7, 0.6,0.5,0.4]
+    ds= sorted(nx.degree(g).items(),key=lambda item: item[1], reverse=True)
 
+    for p in plist:
+        pg = r_perturbS(g, p)
+        rstr = rstr + '{0:8},{1:10.4}'.format(p,nx.average_clustering(pg))
+
+        dpgs= sorted(nx.degree_centrality(pg).items(),key=lambda item: item[1], reverse=True)
+        dsum=0
+        for i in range(20):
+            dsum=abs(dsum+dpgs[i][1]-ds[i][1])
+        rstr = rstr + '{0:8},{1:10.4}'.format(p, dsum)
+        rstr = rstr + '\n'
     try:
-        path=path.replace('GrQc','GrQc_cc')
+        path=path.replace('GrQc','GrQcp_cc')
         f=open(path, 'w')
     except:
         print "int readFileTxt open error"
-
-    p = np.array(w)/14496.0
-    for each in p:
-        pg=r_perturbS(g, each)
-        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
-        rstr=rstr+'\n'
 
     f.write(rstr)
     f.close()
@@ -69,56 +70,61 @@ def t_Gnutella_cc1(path=r"d:\data\p2p-Gnutella08.txt"):
     rstr = ''
     g = nx.Graph()
     g = read_file_txt(g, path)
-    w = [20777,18700,17995,17023]
-    for each in w:
-        R=gRa(g,each)
-        pg=r_perturbR(g, R)
-        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
-        rstr=rstr+'\n'
+    plist = [1.0,0.9, 0.8, 0.7, 0.6,0.5,0.4]
+    ds= sorted(nx.degree(g).items(),key=lambda item: item[1], reverse=True)
+
+    for p in plist:
+        pg = r_perturbS(g, p)
+        rstr = rstr + '{0:8},{1:10.4}'.format(p,nx.average_clustering(pg))
+
+        dpgs= sorted(nx.degree_centrality(pg).items(),key=lambda item: item[1], reverse=True)
+        dsum=0
+        for i in range(20):
+            dsum=abs(dsum+dpgs[i][1]-ds[i][1])
+        rstr = rstr + '{0:8},{1:10.4}'.format(p, dsum)
+        rstr = rstr + '\n'
 
     try:
-        path=path.replace('p2p-Gnutella','GrQcp2p-Gnutella_cc')
+        path=path.replace('p2p-Gnutella','p2p-Gnutellap_cc.txt')
         f=open(path, 'w')
     except:
         print "int Create File error"
 
-    p = np.array(w)/20777.0
-    for each in p:
-        pg=r_perturbS(g, each)
-        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
-        rstr=rstr+'\n'
-
     f.write(rstr)
     f.close()
 
-def t_t_cc1(path=r"d:\data\9.txt"):
+def t_Email_cc1(path=r"d:\data\Email-Enron.txt"):
     rstr = ''
     g = nx.Graph()
     g = read_file_txt(g, path)
-    w = [14,13,12,6]
-    print nx.average_clustering(g)
-    for each in w:
-        R=gRa(g,each)
-        pg=r_perturbR(g, R)
-        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
-        rstr=rstr+'\n'
+    plist = [1.0,0.9, 0.8, 0.7, 0.6,0.5,0.4]
+
+    for p in plist:
+        pg = r_perturbSa(g, p)
+        rstr = rstr + '{0:8},{1:10.4}'.format(p,nx.average_clustering(pg))
+
+        dpgs= sorted(nx.degree_centrality(pg).items(),key=lambda item: item[1], reverse=True)
+        dsum=0
+        for i in range(20):
+            dsum=abs(dsum+dpgs[i][1]-ds[i][1])
+        rstr = rstr + '{0:8},{1:10.4}'.format(p, dsum)
+        rstr = rstr + '\n'
 
     try:
-        path=path.replace('9','9_cc')
+        path=path.replace('Email-Enron','Email-Enronp_cc')
         f=open(path, 'w')
     except:
         print "int Create File error"
 
-    p = np.array(w)/14.0
-    for each in p:
-        pg=r_perturbS(g, each)
-        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
-        rstr=rstr+'\n'
-
     f.write(rstr)
     f.close()
+
+
 if __name__=='__main__':
     print 'in temp'
-    t_t_cc1(path=r"d:\data\9.txt")
+    t_facebook_cc1()
+    #t_GrQc_cc1()
+    #t_Gnutella_cc1()
+    #t_Email_cc1()
 
 

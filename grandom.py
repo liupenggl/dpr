@@ -11,27 +11,7 @@ import networkx as nx
 import random
 import string
 import math
-import os
-#-------------------------------------------------------------------------------------------------------
-def RPerturbSp(g,p=None):
-    '''固定参数的随机扰动方法'''
-    A=nx.to_scipy_sparse_matrix(g)
-    B=sparse.triu(A).toarray()
-    #print B
-    n=len(g)
-    i=0
 
-    ts=0
-    while i<n:
-        j=i
-        while j<n:
-            if(B[i,j]==1):
-                B[i,j] = stats.bernoulli.rvs(p)#p伯努利实验成功的概率
-                ts=ts + 1
-                print ts,":",i,",",j,",",B[i,j]
-            j = j + 1
-        i=i+1
-    return nx.from_numpy_matrix(B,create_using=nx.Graph())#重新构建了Graph类型的返回对象
 #-------------------------------------------------------------------------------------------------------
 def r_perturbS(g,p=None):
     '''固定参数的随机扰动方法，p伯努利实验成功的概率'''
@@ -47,7 +27,7 @@ def r_perturbS(g,p=None):
     ts=0
 
     while i<n:
-        j=i+1
+        j=i+1#略过对角线上的0
         while j<n:
             if(B[i,j]==1):
                 B[i,j] = stats.bernoulli.rvs(p)#参数p伯努利实验成功的概率
@@ -56,6 +36,41 @@ def r_perturbS(g,p=None):
             else:
                 B[i,j] = stats.bernoulli.rvs(q)#参数q伯努利实验成功的概率
                 ts=ts + 1
+                # print "-",ts, ":", i, ",", j, ",", B[i, j]
+            j = j + 1
+        i=i+1
+
+    return nx.from_numpy_matrix(B,create_using=nx.Graph())#重新构建了Graph类型的返回对象
+
+
+#-------------------------------------------------------------------------------------------------------
+def r_perturbSa(g,p=None):
+    '''固定参数的随机扰动方法，p伯努利实验成功的概率'''
+    A=nx.to_scipy_sparse_matrix(g)
+    B=sparse.triu(A).toarray()
+    #print B
+    n=len(g)
+    e_num=len(g.edges())#图中存在的边数
+
+    q = e_num * (1 - p) / ((n * (n - 1)) / 2 - e_num)
+    #print q
+    i = 0
+    ts=0
+    listp=stats.bernoulli.rvs(p,size=e_num)
+    listp=listp.tolist()
+    listq=stats.bernoulli.rvs(q,size=(n * (n - 1)) / 2 - e_num)
+    listq=listq.tolist()
+
+    while i<n:
+        j=i+1#略过对角线上的0
+        while j<n:
+            if(B[i,j]==1):
+                B[i,j] = listp.pop()#参数p伯努利实验成功的概率
+                #ts=ts + 1
+                # print "+",ts, ":", i, ",", j, ",", B[i, j]
+            else:
+                B[i,j] = listq.pop()#参数q伯努利实验成功的概率
+                #ts=ts + 1
                 # print "-",ts, ":", i, ",", j, ",", B[i, j]
             j = j + 1
         i=i+1
@@ -144,37 +159,6 @@ def r_perturbR(g,R):
         i=i+1
 
     return nx.from_numpy_matrix(B,create_using=nx.Graph())#重新构建了Graph类型的返回对象
-
-
-#-------------------------------------------------------------------------------------------------------
-def gR(g,w):
-    '''w为图中的边数，表示经过减边p扰动后仍然留在数据中的边数'''
-    tg=g.copy()
-    Rq=nx.to_scipy_sparse_matrix(g)
-    Rq=Rq.toarray()
-
-    bw=nx.edge_betweenness_centrality(g,normalized=False)
-    norm=sum(bw.values())
-    e_num=len(g.edges())
-
-    n = len(g)
-    N = (n * (n - 1)) / 2
-    for k,v in bw.items():
-        g.add_edge(*k,weight=v)
-    print g.edges(data=True)
-    R = nx.to_scipy_sparse_matrix(g, weight='weight')
-    Rp = R.toarray()
-    Rp=w*Rp*2/Rp.sum()
-
-    q=float(e_num-w)/(N-e_num)
-
-    for i,each in enumerate(Rq):
-        for j,e in enumerate(each):
-            if e==0:
-                Rp[i,j]=q#超级绕
-    R=Rp+Rq
-    print R
-    return R
 
 
 # -------------------------------------------------------------------------------------------------------
@@ -380,7 +364,7 @@ if __name__=='__main__':
     #g = read_file_txt(g, r"d:\data\facebook1.txt")
     #g = read_file_txt(g,r"d:\data\Cora.txt")
     g = read_file_txt(g,r"d:\data\CA-GrQc.txt")
-    # da(g)
+    da(g)
     # p=0.7
     #r=RPerturbS(g,p)
 
@@ -395,7 +379,11 @@ if __name__=='__main__':
     # print len(g.nodes())
     # print len(g.edges())
     # print nx.average_clustering(g)
-    #print [len(c) for c in nx.connected_components(g)]
+    ds=nx.degree_centrality(g)
+    dd=sorted(ds.items(),key=lambda item: item[1], reverse=True)
+    print ds
+    print dd
+
 
     # d=nx.degree(g)
     # print d
@@ -404,5 +392,5 @@ if __name__=='__main__':
     # print bw
     #t_facebook_cc(path=r"d:\data\facebook1.txt")
     #t_GrQc_cc(path=r"d:\data\CA-GrQc.txt")
-    t_t_cc(path=r"d:\data\9.txt")
+    #t_t_cc(path=r"d:\data\9.txt")
     #DrawGraph(r)
