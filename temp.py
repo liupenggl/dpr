@@ -12,27 +12,34 @@ import random
 import string
 import math
 import os
+import datetime
 
-def t_facebook_cc1(path=r"d:\data\facebook1.txt"):
+def test_cc(path=r"d:\data\facebook1.txt"):
     rstr = ''
     g = nx.Graph()
     g = read_file_txt(g, path)
+    sl=g.selfloop_edges()
+    print sl
+    g.remove_edges_from(sl)
+    # bg=g.copy()
     plist = [1.0,0.9, 0.8, 0.7, 0.6,0.5,0.4]
-    ds= sorted(nx.degree(g).items(),key=lambda item: item[1], reverse=True)
+    ds= sorted(nx.degree_centrality(g).items(),key=lambda item: item[1], reverse=True)
 
     for p in plist:
         pg=r_perturbS(g, p)
         rstr=rstr+'{0:8},{1:10.4}'.format(p,nx.average_clustering(pg))
 
-        dpgs= sorted(nx.degree_centrality(pg).items(),key=lambda item: item[1], reverse=True)
+        dpgs=nx.degree_centrality(pg)#扰动后的结点度中心性
         dsum=0
-        for i in range(20):
-            dsum=abs(dsum+dpgs[i][1]-ds[i][1])
+        for i in range(20):#前20个
+            dsum=dsum+abs(ds[i][1]-dpgs[ds[i][0] ])
         rstr = rstr + '{0:8},{1:10.4}'.format(p, dsum)
         rstr = rstr + '\n'
 
     try:
-        path=path.replace('book1','book1_pcc')
+        tu_path=os.path.splitext(path)
+        now = datetime.datetime.now().strftime('%m%d-%H%M')
+        path=tu_path[0]+'_pcc_'+now+tu_path[1]
         f=open(path, 'w')
     except:
         print "int readFileTxt open error"
@@ -40,91 +47,16 @@ def t_facebook_cc1(path=r"d:\data\facebook1.txt"):
     f.write(rstr)
     f.close()
 
-def t_GrQc_cc1(path=r"d:\data\CA-GrQc.txt"):
-    rstr = ''
-    g = nx.Graph()
-    g = read_file_txt(g, path)
-    plist = [1.0,0.9, 0.8, 0.7, 0.6,0.5,0.4]
-    ds= sorted(nx.degree(g).items(),key=lambda item: item[1], reverse=True)
 
-    for p in plist:
-        pg = r_perturbS(g, p)
-        rstr = rstr + '{0:8},{1:10.4}'.format(p,nx.average_clustering(pg))
-
-        dpgs= sorted(nx.degree_centrality(pg).items(),key=lambda item: item[1], reverse=True)
-        dsum=0
-        for i in range(20):
-            dsum=abs(dsum+dpgs[i][1]-ds[i][1])
-        rstr = rstr + '{0:8},{1:10.4}'.format(p, dsum)
-        rstr = rstr + '\n'
-    try:
-        path=path.replace('GrQc','GrQcp_cc')
-        f=open(path, 'w')
-    except:
-        print "int readFileTxt open error"
-
-    f.write(rstr)
-    f.close()
-
-def t_Gnutella_cc1(path=r"d:\data\p2p-Gnutella08.txt"):
-    rstr = ''
-    g = nx.Graph()
-    g = read_file_txt(g, path)
-    plist = [1.0,0.9, 0.8, 0.7, 0.6,0.5,0.4]
-    ds= sorted(nx.degree(g).items(),key=lambda item: item[1], reverse=True)
-
-    for p in plist:
-        pg = r_perturbS(g, p)
-        rstr = rstr + '{0:8},{1:10.4}'.format(p,nx.average_clustering(pg))
-
-        dpgs= sorted(nx.degree_centrality(pg).items(),key=lambda item: item[1], reverse=True)
-        dsum=0
-        for i in range(20):
-            dsum=abs(dsum+dpgs[i][1]-ds[i][1])
-        rstr = rstr + '{0:8},{1:10.4}'.format(p, dsum)
-        rstr = rstr + '\n'
-
-    try:
-        path=path.replace('p2p-Gnutella','p2p-Gnutellap_cc.txt')
-        f=open(path, 'w')
-    except:
-        print "int Create File error"
-
-    f.write(rstr)
-    f.close()
-
-def t_Email_cc1(path=r"d:\data\Email-Enron.txt"):
-    rstr = ''
-    g = nx.Graph()
-    g = read_file_txt(g, path)
-    plist = [1.0,0.9, 0.8, 0.7, 0.6,0.5,0.4]
-
-    for p in plist:
-        pg = r_perturbSa(g, p)
-        rstr = rstr + '{0:8},{1:10.4}'.format(p,nx.average_clustering(pg))
-
-        dpgs= sorted(nx.degree_centrality(pg).items(),key=lambda item: item[1], reverse=True)
-        dsum=0
-        for i in range(20):
-            dsum=abs(dsum+dpgs[i][1]-ds[i][1])
-        rstr = rstr + '{0:8},{1:10.4}'.format(p, dsum)
-        rstr = rstr + '\n'
-
-    try:
-        path=path.replace('Email-Enron','Email-Enronp_cc')
-        f=open(path, 'w')
-    except:
-        print "int Create File error"
-
-    f.write(rstr)
-    f.close()
 
 
 if __name__=='__main__':
     print 'in temp'
-    t_facebook_cc1()
-    #t_GrQc_cc1()
-    #t_Gnutella_cc1()
-    #t_Email_cc1()
+    test_cc(path=r"d:\data\facebook1.txt")
+    # test_cc(path=r"d:\data\CA-GrQc.txt")
+    #test_cc(path=r"d:\data\Email-Enron.txt")
+    #test_cc(path=r"d:\data\p2p-Gnutella08.txt")
+    # test_cc(path=r"d:\data\9.txt")
+
 
 

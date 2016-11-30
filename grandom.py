@@ -3,47 +3,41 @@ __author__ = 'Peng<liupeng@gxnu.edu.cn>'
 from scipy import stats
 from scipy import sparse
 import numpy as np
-import pylab as pl
 import matplotlib.pyplot as plt
 from gfile import *
-from rsel import *
 import networkx as nx
 import random
 import string
 import math
+import itertools as it
 
-#-------------------------------------------------------------------------------------------------------
-def r_perturbS(g,p=None):
-    '''固定参数的随机扰动方法，p伯努利实验成功的概率'''
-    A=nx.to_scipy_sparse_matrix(g)
-    B=sparse.triu(A).toarray()
-    #print B
+
+def r_perturbS(g, p=None):
+    '''固定参数的随机扰动方法，p伯努利实验成功的概率,修改了原图g'''
     n=len(g)
     e_num=len(g.edges())#图中存在的边数
 
-    q = e_num * (1 - p) / ((n * (n - 1)) / 2 - e_num)
-    #print q
-    i = 0
-    ts=0
+    q = e_num * (1 - p) / ((n * (n - 1)) / 2.0 - e_num)
 
-    while i<n:
-        j=i+1#略过对角线上的0
-        while j<n:
-            if(B[i,j]==1):
-                B[i,j] = stats.bernoulli.rvs(p)#参数p伯努利实验成功的概率
-                ts=ts + 1
-                # print "+",ts, ":", i, ",", j, ",", B[i, j]
-            else:
-                B[i,j] = stats.bernoulli.rvs(q)#参数q伯努利实验成功的概率
-                ts=ts + 1
-                # print "-",ts, ":", i, ",", j, ",", B[i, j]
-            j = j + 1
-        i=i+1
+    listp=stats.bernoulli.rvs(p,size=e_num)
+    listp=listp.tolist()
+    listq=stats.bernoulli.rvs(q,size=(n * (n - 1)) / 2.0 - e_num)
+    listq=listq.tolist()
 
-    return nx.from_numpy_matrix(B,create_using=nx.Graph())#重新构建了Graph类型的返回对象
+    del_edges_temp=list()#不能直接删除，后面添加边要用到原始图g。暂存要删除的边。
+    for each in g.edges():
+        if not listp.pop():
+            # print "del{0}".format(each)
+            del_edges_temp.append(each)
+
+    for each in nx.non_edges(g):
+        if listq.pop():
+            # print "add{0}".format(each)
+            g.add_edge(*each)
+    g.remove_edges_from(del_edges_temp)
+    return g#或许不应该提供返回值
 
 
-#-------------------------------------------------------------------------------------------------------
 def r_perturbSa(g,p=None):
     '''固定参数的随机扰动方法，p伯努利实验成功的概率'''
     A=nx.to_scipy_sparse_matrix(g)
@@ -76,7 +70,8 @@ def r_perturbSa(g,p=None):
         i=i+1
 
     return nx.from_numpy_matrix(B,create_using=nx.Graph())#重新构建了Graph类型的返回对象
-#-------------------------------------------------------------------------------------------------------
+
+
 def binomial_vdiS(z,v,g,p):
         """z 是节点的度，node节点的标签，g图,p边仍然存在的概率        """
 
@@ -92,7 +87,8 @@ def binomial_vdiS(z,v,g,p):
             sum = sum + stats.binom.pmf(t, di, p) * stats.binom.pmf(z-t,N-di, q)
             t += 1
         return sum
-#-------------------------------------------------------------------------------------------------------
+
+
 def riskS(v,g,p):
     """v是节点，g是图,p边仍然存在的概率，输入为点v被重识别的概率
     """
@@ -102,7 +98,7 @@ def riskS(v,g,p):
     for each in g:
         tsum=tsum+binomial_vdiS(di, each, g, p)
     return b/tsum
-#-------------------------------------------------------------------------------------------------------
+
 
 def cal_pS(g, pr):
     """g图,pr要求的隐私保护力度"""
@@ -115,7 +111,7 @@ def cal_pS(g, pr):
                 if riskS(each, g, p) < pr or p > 0.95:
                     break
     return p
-#-------------------------------------------------------------------------------------------------------
+
 
 def cal_pSa(g, pr):
     """g图,pr要求的隐私保护力度"""
@@ -128,7 +124,8 @@ def cal_pSa(g, pr):
                 if riskS(each, g, p) < pr or p<0.05:
                     break
     return p
-#-------------------------------------------------------------------------------------------------------
+
+
 def r_perturbR(g,R):
     '''可变参数的随机扰动方法'''
     A=nx.to_scipy_sparse_matrix(g)
@@ -207,7 +204,8 @@ def normal_vdiR(z, v, g, Rp):
     sum=X.cdf(z+0.5)-X.cdf(z-0.5)
 
     return sum
-#-------------------------------------------------------------------------------------------------------
+
+
 def riskR(v,g,R):
     """v是节点，R是扰动将矩阵，输出为点v被重识别的概率
     """
@@ -245,144 +243,48 @@ def cal_pRv(v,g,pr):
             print 'v=', v, 'w=', w, 'r=', riskR(v, g, R)
             if riskR(v, g, R) < pr or w < step:
                 break
-
     return w
 
 
-def t_facebook_cc(path=r"d:\data\facebook1.txt"):
-    rstr = ''
+def g_r():
+    """返回两跳邻居内，可能加入的边"""
     g = nx.Graph()
-    g = read_file_txt(g, path)
-    w = [1945, 1294, 860, 643]
-    for each in w:
-        R=gRa(g,each)
-        pg=r_perturbR(g, R)
-        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
-        rstr=rstr+'\n'
-
-    try:
-        path=path.replace('book1','book1_cc')
-        f=open(path, 'w')
-    except:
-        print "int readFileTxt open error"
-
-    p = np.array(w)/4813.0
-    for each in p:
-        pg=r_perturbS(g, each)
-        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
-        rstr=rstr+'\n'
-
-    f.write(rstr)
-    f.close()
+    da(g)
+    print 'g.size=',len(g.nodes())
+    h= nx.Graph()
+    for node in g:
+        h.add_edges_from(com_neigbor(g,node))
 
 
-def t_GrQc_cc(path=r"d:\data\CA-GrQc.txt"):
-    rstr = ''
-    g = nx.Graph()
-    g = read_file_txt(g, path)
-    w = [14496,13454,12394,9782]
-    for each in w:
-        R=gRa(g,each)
-        pg=r_perturbR(g, R)
-        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
-        rstr=rstr+'\n'
 
-    try:
-        path=path.replace('GrQc','GrQc_cc')
-        f=open(path, 'w')
-    except:
-        print "int readFileTxt open error"
+def com_neigbor(g,node):
+    print 'g.size=',len(g.nodes())
+    nb_nodes=set(g.neighbors(node))#防止缺少邻居自己
+    for each in g.neighbors(node):
+        nb_nodes=nb_nodes.union(set(g.neighbors(each)))
+    print nb_nodes
+    h=g.subgraph(nb_nodes)
+    ch=nx.complement(h)
 
-    p = np.array(w)/14496.0
-    for each in p:
-        pg=r_perturbS(g, each)
-        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
-        rstr=rstr+'\n'
+    return ch.edges()
 
-    f.write(rstr)
-    f.close()
 
-def t_Gnutella_cc(path=r"d:\data\p2p-Gnutella08.txt"):
-    rstr = ''
-    g = nx.Graph()
-    g = read_file_txt(g, path)
-    w = [20777,18700,17995,17023]
-    for each in w:
-        R=gRa(g,each)
-        pg=r_perturbR(g, R)
-        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
-        rstr=rstr+'\n'
 
-    try:
-        path=path.replace('p2p-Gnutella','GrQcp2p-Gnutella_cc')
-        f=open(path, 'w')
-    except:
-        print "int Create File error"
-
-    p = np.array(w)/20777.0
-    for each in p:
-        pg=r_perturbS(g, each)
-        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
-        rstr=rstr+'\n'
-
-    f.write(rstr)
-    f.close()
-
-def t_t_cc(path=r"d:\data\9.txt"):
-    rstr = ''
-    g = nx.Graph()
-    g = read_file_txt(g, path)
-    w = [14,13,12,6]
-    print nx.average_clustering(g)
-    for each in w:
-        R=gRa(g,each)
-        pg=r_perturbR(g, R)
-        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
-        rstr=rstr+'\n'
-
-    try:
-        path=path.replace('9','9_cc')
-        f=open(path, 'w')
-    except:
-        print "int Create File error"
-
-    p = np.array(w)/14.0
-    for each in p:
-        pg=r_perturbS(g, each)
-        rstr=rstr+'{0:8},{1:10.4}'.format(each,nx.average_clustering(pg))
-        rstr=rstr+'\n'
-
-    f.write(rstr)
-    f.close()
 
 if __name__=='__main__':
     print 'in grandom'
     g=nx.Graph()
 
-
     #    g = read_file_txt(g,r"E:\data\facebook1.txt")
     #g = read_file_txt(g, r"d:\data\facebook1.txt")
     #g = read_file_txt(g,r"d:\data\Cora.txt")
-    g = read_file_txt(g,r"d:\data\CA-GrQc.txt")
-    da(g)
+    #g = read_file_txt(g,r"d:\data\CA-GrQc.txt")
+    # da(g)
     # p=0.7
     #r=RPerturbS(g,p)
+    # r_perturbS(g,0)
+    g_r()
 
-    # for v in g:
-    #      print "z:",v,"=",riskS(v,g,p)
-    #print cal_pSa(g,0.3)
-    # x=gRa(g,6)
-    # for each in g:
-    #     print each, riskR(each,g,x)
-    # for p in np.arange(0.1,0.4,0.1):
-    #     print cal_pRv('3830',g,p)
-    # print len(g.nodes())
-    # print len(g.edges())
-    # print nx.average_clustering(g)
-    ds=nx.degree_centrality(g)
-    dd=sorted(ds.items(),key=lambda item: item[1], reverse=True)
-    print ds
-    print dd
 
 
     # d=nx.degree(g)
